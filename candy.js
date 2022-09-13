@@ -46,8 +46,4 @@ class Candy {
         currCandy.alpha = 1;
         this.dragging = false;
     }
-
-    getPos() {
-        return this.body.position
-    }
 }
