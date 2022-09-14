@@ -24,6 +24,8 @@ candyGridGraphic.lineStyle(2, 0x000, 1)
 candyGridGraphic.drawRect(0,0,600, 600)
 candyGrid.addChild(candyGridGraphic)
 
+const candyGridContent = new PIXI.Container()
+
 function randomCandy() {
     return candies[Math.floor(Math.random() * candies.length)]
 }
@@ -49,9 +51,8 @@ for (let r = 0; r < rows; r++) {
         // this.body.on("pointerupoutside", this.dragEnd.bind(this))
         body.on("pointerup", dragEnd)       
     }
-    candyGrid.addChild(row)
+    candyGridContent.addChild(row)
 }
-
 
 function dragStart(e) {
     currCandy = this
@@ -89,14 +90,14 @@ function dragEnd(e) {
     if(nextTo) {
         swap(otherCandy, "texture", currCandy, "texture")
 
-        let check = isValid()
+        let check = isValid(r1, c1)
         if (!check) {
             console.log("swap back")
             swap(otherCandy, "texture", currCandy, "texture")
         }
     }
 
-    // console.log(otherCandy)
+    console.log(otherCandy)
     // console.log(currCandy)
     // console.log(candyGrid)
     this.alpha = 1;
@@ -109,11 +110,11 @@ function swap(obj1, key1, obj2, key2) {
  }
 
  function checkThreeOrMore () {
-    for(let r = 1; r < rows; r++) {
+    for(let r = 0; r < rows; r++) {
         for(let c = 0; c < cols - 2; c++) {
-            let candy1 = candyGrid.children[r].children[c]
-            let candy2 = candyGrid.children[r].children[c+1]
-            let candy3 = candyGrid.children[r].children[c+2]
+            let candy1 = candyGridContent.children[r].children[c]
+            let candy2 = candyGridContent.children[r].children[c+1]
+            let candy3 = candyGridContent.children[r].children[c+2]
             if (candy1.texture === candy2.texture && candy2.texture === candy3.texture && candy1.texture !== blankTexture) {
                 candy1.texture = blankTexture
                 candy2.texture = blankTexture
@@ -122,10 +123,10 @@ function swap(obj1, key1, obj2, key2) {
         }
     }
     for(let c = 0; c < cols; c++) {
-        for(let r = 1; r < rows - 2; r++) {
-            let candy1 = candyGrid.children[r].children[c]
-            let candy2 = candyGrid.children[r+1].children[c]
-            let candy3 = candyGrid.children[r+2].children[c]
+        for(let r = 0; r < rows - 2; r++) {
+            let candy1 = candyGridContent.children[r].children[c]
+            let candy2 = candyGridContent.children[r+1].children[c]
+            let candy3 = candyGridContent.children[r+2].children[c]
             if (candy1.texture === candy2.texture && candy2.texture === candy3.texture && candy1.texture !== blankTexture) {
                 candy1.texture = blankTexture
                 candy2.texture = blankTexture
@@ -136,16 +137,15 @@ function swap(obj1, key1, obj2, key2) {
     }
 }
 
-function isValid () {
-    console.log(candyGrid)
-    console.log(candyGrid.children[1].children[0].texture)
-    console.log(candyGrid.children[1].children[1].texture)
-    console.log(candyGrid.children[1].children[2].texture)
+function isValid (r1, c1) {
+    console.log(candyGridContent)
+    // console.log(candyGrid.children[r1].children[c1].texture.textureCacheIds)
+    // console.log(candyGrid.children[r1].children[c1].texture.textureCacheIds)
     for(let r = 1; r < rows; r++) {
         for(let c = 0; c < cols - 2; c++) {
             let candy1 = candyGrid.children[r].children[c]
-            let candy2 = candyGrid.children[r].children[c+1]
-            let candy3 = candyGrid.children[r].children[c+2]
+            let candy2 = candyGridContent.children[r].children[c+1]
+            let candy3 = candyGridContent.children[r].children[c+2]
             if (candy1.texture === candy2.texture && candy2.texture === candy3.texture && candy1.texture !== blankTexture) {
                 console.log("true")
                 console.log(candy1.texture)
@@ -156,20 +156,25 @@ function isValid () {
         }
     }
     for(let c = 0; c < cols; c++) {
-        for(let r = 1; r < rows - 2; r++) {
-            let candy1 = candyGrid.children[r].children[c]
-            let candy2 = candyGrid.children[r+1].children[c]
-            let candy3 = candyGrid.children[r+2].children[c]
+        for(let r = 0; r < rows - 2; r++) {
+            let candy1 = candyGridContent.children[r].children[c]
+            let candy2 = candyGridContent.children[r+1].children[c]
+            let candy3 = candyGridContent.children[r+2].children[c]
             if (candy1.texture === candy2.texture && candy2.texture === candy3.texture && candy1.texture !== blankTexture) {
                 console.log("true")
+                console.log(candy1.texture)
+                console.log(candy2.texture)
+                console.log(candy3.texture)
                 return true
             }
         }
     }
+    // will make candy swap back
     return false
 }
 
 // console.log(candyGridArray)
+candyGrid.addChild(candyGridContent)
 app.stage.addChild(candyGrid)
 
 function gameLoop() {
