@@ -16,6 +16,7 @@ let lastTime = 0;
 let animationtimetotal = 1;
 let selectedCandy = {col: 0, row: 0, selected: false}
 let drag = false;
+let gamestate = true
 
 function randomCandy() {
     return candies[Math.floor(Math.random() * candies.length)]
@@ -61,6 +62,7 @@ function newGame() {
 // event listeners
 
 function gameLoop(lastTime) {
+    // if gamestate is false update with animations
     updateGrid(lastTime)
     drawCandy()
     requestAnimationFrame(gameLoop);
@@ -79,10 +81,13 @@ function drawCandy() {
             if (candy) {
                 candy.x = 50 + (r + shift * lastTime/animationtimetotal) * 60
                 candy.y = 50 + c * 60
+                candy.alpha = 1
                 candyGrid.addChild(candy)
             }
-            
         }
+    }
+    if (selectedCandy.selected) {
+        candyGridArray[selectedCandy.row][selectedCandy.col].sprite.alpha = 0.5
     }
 }
 
@@ -172,4 +177,9 @@ function mouseSwap(x1, y1, x2, y2) {
     candyGridArray[y1][x1].sprite = candyGridArray[y2][x2].sprite;
     candyGridArray[y2][x2].sprite = spriteswap;
     selectedCandy.selected = false;
+
+    // Start animation
+    animationstate = 2;
+    animationtime = 0;
+    gamestate = false;
 }
