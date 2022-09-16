@@ -17,6 +17,8 @@ let animationtimetotal = 1;
 let selectedCandy = {col: 0, row: 0, selected: false}
 let drag = false;
 let gamestate = true
+let blankTexture = PIXI.Texture.from(`./img/blank.png`)
+// let clusters = []
 
 function randomCandy() {
     return candies[Math.floor(Math.random() * candies.length)]
@@ -70,6 +72,70 @@ function gameLoop(lastTime) {
 
 function updateGrid() {
     // move and animate candy
+    // remove three in line
+    // update score
+    // generate new candy
+
+    findThreeOrMore()
+    // removeThreeOrMore()
+}
+
+function findThreeOrMore() {
+    let clusters = []
+    // cols check
+    for (var j=0; j<rows; j++) {
+        var matchlength = 1;
+        for (var i=0; i<cols; i++) {
+            var checkcluster = false;
+            if (i == cols-1) {
+                checkcluster = true;
+            } else {
+                if (candyGridArray[i][j].sprite.texture == candyGridArray[i+1][j].sprite.texture &&
+                    candyGridArray[i][j].sprite.texture != blankTexture) {
+                    matchlength++;
+                } else {
+                    checkcluster = true
+                }
+            }
+
+            if (checkcluster) {
+                console.log(matchlength)
+                if (matchlength >= 3) {
+                    clusters.push({row: i+1-matchlength,col: j, length: matchlength, horizontal: false})
+                }
+                matchlength = 1
+            }
+        }
+    }
+    // row check
+    for (var i=0; i<cols; i++) {
+        var matchlength = 1;
+        for (var j=0; j<rows; j++) {
+            var checkcluster = false;
+            
+            if (j == rows-1) {
+                checkcluster = true;
+            } else {
+                if (candyGridArray[i][j].sprite.texture == candyGridArray[i][j+1].sprite.texture &&
+                    candyGridArray[i][j].sprite.texture != blankTexture) {
+                    matchlength++;
+                } else {
+                    checkcluster = true;
+                }
+            }
+            
+            if (checkcluster) {
+                if (matchlength >= 3) {
+                    clusters.push({ column: i, row:j+1-matchlength,
+                                    length: matchlength, horizontal: true });
+                }
+                
+                matchlength = 1;
+            }
+        }
+    }
+    console.log(clusters)
+    // console.log(matchlength)
 }
 
 function drawCandy() {
@@ -93,7 +159,7 @@ function drawCandy() {
 
 function onMouseDown(e) {
     let pos = app.renderer.plugins.interaction.mouse.global
-    console.log(candyGridArray)
+    // console.log(candyGridArray)
     if (!drag) {
         let click = getMouseTile(pos)
         var swapped = false;
@@ -118,7 +184,7 @@ function onMouseDown(e) {
         }
     }
     drag = true;
-    console.log(selectedCandy)
+    // console.log(selectedCandy)
 }
 
 function onMouseUp(e) {
@@ -172,7 +238,7 @@ function canSwap(x1, y1, x2, y2) {
 }
 
 function mouseSwap(x1, y1, x2, y2) {
-    console.log("swap")
+    // console.log("swap")
     var spriteswap = candyGridArray[y1][x1].sprite;
     candyGridArray[y1][x1].sprite = candyGridArray[y2][x2].sprite;
     candyGridArray[y2][x2].sprite = spriteswap;
