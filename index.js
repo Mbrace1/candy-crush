@@ -104,16 +104,11 @@ function updateGrid(time) {
                         score += 100 * (clusters[i].length - 2);;
                     }
 
-                    // removeAnimation()
-                    // setTimeout (function(){
-                        // candy.rotation = 0
-                        // candy.scale.x = 1;
-                        // candy.scale.y = 1;
-                        // Tiles need to be shifted
-                        // Clusters found, remove them
+                    removeAnimation()
+                    setTimeout (function(){
                         removeThreeOrMore();
                         animationstate = 1;
-                    //   },2000);
+                      },2000);
 
                 } else {
                     // No clusters found, animation complete
@@ -294,14 +289,18 @@ function moveCandyDown() {
 }
 
 function changeToBlankTexture(col, row) {
-    candyGridArray[row][col].sprite.texture = blankTexture
+    let candy = candyGridArray[row][col].sprite
+    candy.texture = blankTexture
+    candy.rotation = 0
+    candy.scale.x = 1;
+    candy.scale.y = 1;
 }
 
 function rotate(col, row) {
     let candy = candyGridArray[row][col].sprite
-    candy.rotation += 5;
-    candy.scale.x *= 0.99;
-    candy.scale.y *= 0.99;
+    candy.rotation += 7;
+    candy.scale.x *= 0.5;
+    candy.scale.y *= 0.5;
 }
 
 function drawCandy() {
