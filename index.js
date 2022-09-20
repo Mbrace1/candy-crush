@@ -18,7 +18,7 @@ let selectedCandy = {col: 0, row: 0, selected: false}
 let drag = false;
 let gamestate = true
 let blankTexture = PIXI.Texture.from(`./img/blank.png`)
-// let clusters = []
+let clusters = []
 
 function randomCandy() {
     return candies[Math.floor(Math.random() * candies.length)]
@@ -77,11 +77,11 @@ function updateGrid() {
     // generate new candy
 
     findThreeOrMore()
-    // removeThreeOrMore()
+    removeThreeOrMore()
 }
 
 function findThreeOrMore() {
-    let clusters = []
+    clusters = []
     // cols check
     for (var j=0; j<rows; j++) {
         var matchlength = 1;
@@ -99,7 +99,6 @@ function findThreeOrMore() {
             }
 
             if (checkcluster) {
-                console.log(matchlength)
                 if (matchlength >= 3) {
                     clusters.push({row: i+1-matchlength,col: j, length: matchlength, horizontal: false})
                 }
@@ -108,9 +107,9 @@ function findThreeOrMore() {
         }
     }
     // row check
-    for (var i=0; i<cols; i++) {
+    for (var i=0; i< rows; i++) {
         var matchlength = 1;
-        for (var j=0; j<rows; j++) {
+        for (var j=0; j<cols; j++) {
             var checkcluster = false;
             
             if (j == rows-1) {
@@ -126,7 +125,7 @@ function findThreeOrMore() {
             
             if (checkcluster) {
                 if (matchlength >= 3) {
-                    clusters.push({ column: i, row:j+1-matchlength,
+                    clusters.push({ row: i, col: j+1-matchlength,
                                     length: matchlength, horizontal: true });
                 }
                 
@@ -136,6 +135,27 @@ function findThreeOrMore() {
     }
     console.log(clusters)
     // console.log(matchlength)
+}
+
+function removeThreeOrMore() {
+    for (var i=0; i< clusters.length; i++) {
+        let line = clusters[i]
+        let colOffset = 0
+        let rowOffset = 0
+        for (var j=0; j<line.length; j++) {
+            changeToBlankTexture(line.col + colOffset, line.row + rowOffset)
+            if (line.horizontal) {
+                colOffset++;
+            } else {
+                rowOffset++;
+            }
+        }
+    }
+}
+
+function changeToBlankTexture(col, row) {
+    candyGridArray[row][col].sprite.texture = blankTexture
+
 }
 
 function drawCandy() {
