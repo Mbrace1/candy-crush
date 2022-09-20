@@ -13,12 +13,15 @@ let rows = 9
 let candyGrid = new PIXI.Container()
 let candyGridArray = []
 let lastTime = 0;
-let animationtimetotal = 1;
+let animationtime = 0;
+let animationtimetotal = .3;
 let selectedCandy = {col: 0, row: 0, selected: false}
 let drag = false;
 let gamestate = true
 let blankTexture = PIXI.Texture.from(`./img/blank.png`)
 let clusters = []
+let currentmove = {column1: 0, row1: 0, column2: 0, row2: 0};
+let score = 0
 
 function randomCandy() {
     return candies[Math.floor(Math.random() * candies.length)]
@@ -41,44 +44,136 @@ function newGame() {
     const candyGridGraphic = new PIXI.Graphics()
     candyGridGraphic.x = 50
     candyGridGraphic.y = 50
-    candyGridGraphic.beginFill(0x8eb8fa)
+    candyGridGraphic.beginFill(0x8eb8fa) //0x8eb8fa
     candyGridGraphic.lineStyle(2, 0x000, 1)
     candyGridGraphic.drawRect(0,0,600, 600)
     app.stage.addChild(candyGridGraphic)
     app.stage.addChild(candyGrid)
 
-    for (let c = 0; c < cols; c++) {
-        candyGridArray[c] = [];
-        for (let r = 0; r < rows; r++) {
-            let texture = PIXI.Texture.from(`./img/${randomCandy()}.png`)
-            let candy = new PIXI.Sprite(texture)
-            candy.anchor.set(0.5);
-            candy.interactive = true
-            candyGridArray[c][r] = { sprite: candy, shift:0 }
+    createGrid()
+    gameLoop(0)
+}
+
+function createGrid() {
+    let done = false 
+
+    while (!done) {
+        for (let c = 0; c < cols; c++) {
+            candyGridArray[c] = [];
+            for (let r = 0; r < rows; r++) {
+                let texture = PIXI.Texture.from(`./img/${randomCandy()}.png`)
+                let candy = new PIXI.Sprite(texture)
+                candy.anchor.set(0.5);
+                candy.interactive = true
+                candyGridArray[c][r] = { sprite: candy, shift:0 }
+            }
+        }
+
+        findThreeOrMore()
+        console.log(clusters)
+        if (clusters.length <= 0) {
+            done = true
         }
     }
-
-    gameLoop(lastTime)
 }
 
 // event listeners
 
-function gameLoop(lastTime) {
+function gameLoop(time) {
     // if gamestate is false update with animations
-    updateGrid(lastTime)
+    updateGrid(time)
     drawCandy()
     requestAnimationFrame(gameLoop);
 }
 
-function updateGrid() {
-    // move and animate candy
-    // remove three in line
-    // update score
-    // generate new candy
+function updateGrid(time) {
+    let dt = (time - lastTime) / 1000;
+    lastTime = time;
 
-    findThreeOrMore()
-    removeThreeOrMore()
-    moveCandyDown()
+    if (gamestate === false) {
+        console.log("animations")
+        // move and animate candy
+        animationtime += dt;
+        if (animationstate === 0) {
+            if (animationtime > animationtimetotal) {
+                findThreeOrMore()
+                if (clusters.length > 0) {
+                    // Add points to the score
+                    for (var i=0; i<clusters.length; i++) {
+                        // Add extra points for longer clusters
+                        score += 100 * (clusters[i].length - 2);;
+                    }
+
+                    // removeAnimation()
+                    // setTimeout (function(){
+                        // candy.rotation = 0
+                        // candy.scale.x = 1;
+                        // candy.scale.y = 1;
+                        // Tiles need to be shifted
+                        // Clusters found, remove them
+                        removeThreeOrMore();
+                        animationstate = 1;
+                    //   },2000);
+
+                } else {
+                    // No clusters found, animation complete
+                    gamestate = true;
+                }
+                animationtime = 0;
+                                    
+            }
+        } else if (animationstate === 1) {
+            if (animationtime > animationtimetotal) {
+
+                // Shift tiles
+                moveCandyDown();
+                
+                // New clusters need to be found
+                animationstate = 0;
+                animationtime = 0;
+                
+                // Check if there are new clusters
+                findThreeOrMore();
+                if (clusters.length <= 0) {
+                    // Animation complete
+                    gamestate = true;
+                }
+            }
+        } else if (animationstate === 2) {
+            // Swapping tiles animation
+            if (animationtime > animationtimetotal) {
+                // Swap the tiles
+                swap(currentmove.column1, currentmove.row1, currentmove.column2, currentmove.row2);
+                
+                // Check if the swap made a cluster
+                findThreeOrMore();
+                if (clusters.length > 0) {
+                    // Valid swap, found one or more clusters
+                    // Prepare animation states
+                    animationstate = 0;
+                    animationtime = 0;
+                    gamestate = false;
+                } else {
+                    // Invalid swap, Rewind swapping animation
+                    animationstate = 3;
+                    animationtime = 0;
+                }
+                
+                findThreeOrMore();
+            }
+        } else if (animationstate === 3) {
+            // Rewind swapping animation
+            if (animationtime > animationtimetotal) {
+                // Invalid swap, swap back
+                swap(currentmove.column1, currentmove.row1, currentmove.column2, currentmove.row2);
+                
+                // Animation complete
+                gamestate = true;
+            }
+        }
+        
+        findThreeOrMore()
+    }
 }
 
 function findThreeOrMore() {
@@ -152,16 +247,33 @@ function removeThreeOrMore() {
     }
 }
 
+function removeAnimation(candy) {
+    for (var i=0; i< clusters.length; i++) {
+        let line = clusters[i]
+        let colOffset = 0
+        let rowOffset = 0
+        for (var j=0; j<line.length; j++) {
+            rotate(line.col + colOffset, line.row + rowOffset)
+            if (line.horizontal) {
+                colOffset++;
+            } else {
+                rowOffset++;
+            }
+        }
+    }
+}
+
 function moveCandyDown() {
     for (let c = 0; c < cols; c++) {
-        for (let r = 0; r < rows -1; r++) {
-            let shift = 0
+        let shift = 0
+        for (let r = rows -1; r >= 0; r--) {
             if (candyGridArray[r][c].sprite.texture === blankTexture) {
                 shift++
                 // blank squares will not move so shift 0
                 candyGridArray[r][c].shift = 0
             } else {
                 candyGridArray[r][c].shift = shift
+                console.log(candyGridArray[r][c].shift)
             }
         }
     }
@@ -173,7 +285,7 @@ function moveCandyDown() {
             } else {
                 let shift = candyGridArray[r][c].shift;
                 if (shift > 0) {
-                    mouseSwap(c, r, c, r+shift)
+                    swap(c, r, c, r+shift)
                 }
             }
             candyGridArray[r][c].shift = 0;
@@ -183,7 +295,13 @@ function moveCandyDown() {
 
 function changeToBlankTexture(col, row) {
     candyGridArray[row][col].sprite.texture = blankTexture
+}
 
+function rotate(col, row) {
+    let candy = candyGridArray[row][col].sprite
+    candy.rotation += 5;
+    candy.scale.x *= 0.99;
+    candy.scale.y *= 0.99;
 }
 
 function drawCandy() {
@@ -193,7 +311,7 @@ function drawCandy() {
             let shift = candyGridArray[c][r].shift;
             let candy = candyGridArray[c][r].sprite
             if (candy) {
-                candy.x = 50 + (r + shift * lastTime/animationtimetotal) * 60
+                candy.x = 50 + (r + shift * animationtime/animationtimetotal) * 60
                 candy.y = 50 + c * 60
                 candy.alpha = 1
                 candyGrid.addChild(candy)
@@ -285,15 +403,19 @@ function canSwap(x1, y1, x2, y2) {
     return false;
 }
 
-function mouseSwap(x1, y1, x2, y2) {
+function mouseSwap(c1, r1, c2, r2) {
     // console.log("swap")
-    var spriteswap = candyGridArray[y1][x1].sprite;
-    candyGridArray[y1][x1].sprite = candyGridArray[y2][x2].sprite;
-    candyGridArray[y2][x2].sprite = spriteswap;
+    currentmove = {column1: c1, row1: r1, column2: c2, row2: r2};
     selectedCandy.selected = false;
 
     // Start animation
     animationstate = 2;
     animationtime = 0;
     gamestate = false;
+}
+
+function swap(x1, y1, x2, y2) {
+    let spriteswap = candyGridArray[y1][x1].sprite;
+    candyGridArray[y1][x1].sprite = candyGridArray[y2][x2].sprite;
+    candyGridArray[y2][x2].sprite = spriteswap;
 }
