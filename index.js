@@ -78,6 +78,7 @@ function updateGrid() {
 
     findThreeOrMore()
     removeThreeOrMore()
+    moveCandyDown()
 }
 
 function findThreeOrMore() {
@@ -133,8 +134,6 @@ function findThreeOrMore() {
             }
         }
     }
-    console.log(clusters)
-    // console.log(matchlength)
 }
 
 function removeThreeOrMore() {
@@ -149,6 +148,35 @@ function removeThreeOrMore() {
             } else {
                 rowOffset++;
             }
+        }
+    }
+}
+
+function moveCandyDown() {
+    for (let c = 0; c < cols; c++) {
+        for (let r = 0; r < rows -1; r++) {
+            let shift = 0
+            if (candyGridArray[r][c].sprite.texture === blankTexture) {
+                shift++
+                // blank squares will not move so shift 0
+                candyGridArray[r][c].shift = 0
+            } else {
+                candyGridArray[r][c].shift = shift
+            }
+        }
+    }
+
+    for (let c = 0; c < cols; c++) {
+        for (let r = rows-1; r >= 0; r--) {
+            if (candyGridArray[r][c].sprite.texture === blankTexture) {
+                candyGridArray[r][c].sprite.texture = PIXI.Texture.from(`./img/${randomCandy()}.png`)
+            } else {
+                let shift = candyGridArray[r][c].shift;
+                if (shift > 0) {
+                    mouseSwap(c, r, c, r+shift)
+                }
+            }
+            candyGridArray[r][c].shift = 0;
         }
     }
 }
