@@ -23,6 +23,15 @@ let clusters = []
 let currentmove = {column1: 0, row1: 0, column2: 0, row2: 0};
 let score = 0
 
+let scoreText = new PIXI.Text('Score: ' + score);
+scoreText.x = 700;
+scoreText.y = 100;
+scoreText.style = new PIXI.TextStyle({
+    fill: 0x000
+})
+
+app.stage.addChild(scoreText);
+
 function randomCandy() {
     return candies[Math.floor(Math.random() * candies.length)]
 }
@@ -47,6 +56,7 @@ function newGame() {
     candyGridGraphic.beginFill(0x8eb8fa) //0x8eb8fa
     candyGridGraphic.lineStyle(2, 0x000, 1)
     candyGridGraphic.drawRect(0,0,600, 600)
+
     app.stage.addChild(candyGridGraphic)
     app.stage.addChild(candyGrid)
 
@@ -82,6 +92,7 @@ function createGrid() {
 function gameLoop(time) {
     // if gamestate is false update with animations
     updateGrid(time)
+    scoreText.text = "Score: " + score
     drawCandy()
     requestAnimationFrame(gameLoop);
 }
@@ -101,14 +112,14 @@ function updateGrid(time) {
                     // Add points to the score
                     for (var i=0; i<clusters.length; i++) {
                         // Add extra points for longer clusters
-                        score += 100 * (clusters[i].length - 2);;
+                        score += 10 * (clusters[i].length - 2);;
                     }
 
-                    removeAnimation()
-                    setTimeout (function(){
+                    // removeAnimation()
+                    // setTimeout (function(){
                         removeThreeOrMore();
                         animationstate = 1;
-                      },2000);
+                    //   },2000);
 
                 } else {
                     // No clusters found, animation complete
