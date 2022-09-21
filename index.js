@@ -80,7 +80,6 @@ function createGrid() {
         }
 
         findThreeOrMore()
-        console.log(clusters)
         if (clusters.length <= 0) {
             done = true
         }
@@ -102,7 +101,6 @@ function updateGrid(time) {
     lastTime = time;
 
     if (gamestate === false) {
-        console.log("animations")
         // move and animate candy
         animationtime += dt;
         if (animationstate === 0) {
@@ -115,11 +113,8 @@ function updateGrid(time) {
                         score += 10 * (clusters[i].length - 2);;
                     }
 
-                    // removeAnimation()
-                    // setTimeout (function(){
-                        removeThreeOrMore();
-                        animationstate = 1;
-                    //   },2000);
+                    removeThreeOrMore();
+                    animationstate = 1;
 
                 } else {
                     // No clusters found, animation complete
@@ -253,22 +248,6 @@ function removeThreeOrMore() {
     }
 }
 
-function removeAnimation(candy) {
-    for (var i=0; i< clusters.length; i++) {
-        let line = clusters[i]
-        let colOffset = 0
-        let rowOffset = 0
-        for (var j=0; j<line.length; j++) {
-            rotate(line.col + colOffset, line.row + rowOffset)
-            if (line.horizontal) {
-                colOffset++;
-            } else {
-                rowOffset++;
-            }
-        }
-    }
-}
-
 function moveCandyDown() {
     for (let c = 0; c < cols; c++) {
         let shift = 0
@@ -279,7 +258,6 @@ function moveCandyDown() {
                 candyGridArray[r][c].shift = 0
             } else {
                 candyGridArray[r][c].shift = shift
-                console.log(candyGridArray[r][c].shift)
             }
         }
     }
@@ -301,30 +279,30 @@ function moveCandyDown() {
 
 function changeToBlankTexture(col, row) {
     let candy = candyGridArray[row][col].sprite
-    candy.texture = blankTexture
-    candy.rotation = 0
-    candy.scale.x = 1;
-    candy.scale.y = 1;
-}
-
-function rotate(col, row) {
-    let candy = candyGridArray[row][col].sprite
-    candy.rotation += 7;
-    candy.scale.x *= 0.5;
-    candy.scale.y *= 0.5;
+    if (candy.scale.x < 0.2) {
+        candy.texture = blankTexture
+        candy.rotation = 0
+        candy.scale.x = 1;
+        candy.scale.y = 1;
+    } else {
+        candy.rotation += 7;
+        candy.scale.x *= 0.5;
+        candy.scale.y *= 0.5;
+    }
 }
 
 function drawCandy() {
     candyGrid.removeChildren()
-    for (let c = 0; c < cols; c++) {
-        for (let r = 0; r < rows; r++) {
-            let shift = candyGridArray[c][r].shift;
-            let candy = candyGridArray[c][r].sprite
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+            let shift = candyGridArray[r][c].shift;
+            let candy = candyGridArray[r][c].sprite
             if (candy) {
-                candy.x = 50 + (r + shift * animationtime/animationtimetotal) * 60
-                candy.y = 50 + c * 60
+                candy.x = 50 + (c + shift * animationtime/animationtimetotal) * 60
+                candy.y = 50 + r * 60
                 candy.alpha = 1
                 candyGrid.addChild(candy)
+
             }
         }
     }
@@ -428,4 +406,5 @@ function swap(x1, y1, x2, y2) {
     let spriteswap = candyGridArray[y1][x1].sprite;
     candyGridArray[y1][x1].sprite = candyGridArray[y2][x2].sprite;
     candyGridArray[y2][x2].sprite = spriteswap;
+    // candyGridArray[y2][x2].moveTo(30, 30);
 }
