@@ -27,8 +27,36 @@ let scoreText = new PIXI.Text('Score: ' + score);
 scoreText.x = 700;
 scoreText.y = 100;
 scoreText.style = new PIXI.TextStyle({
-    fill: 0x000
+    fontFamily: 'Arial',
+    fontSize: 30,
+    fontStyle: 'italic',
+    fontWeight: 'bold',
+    fill: ['#ffffff', '#FFC0CB'],
+    stroke: '#4a1850',
+    strokeThickness: 5,
+    dropShadow: true,
+    dropShadowColor: '#000000',
+    dropShadowBlur: 4,
+    dropShadowAngle: Math.PI / 6,
+    dropShadowDistance: 6,
+    wordWrap: true,
+    wordWrapWidth: 440,
+    lineJoin: 'round',
 })
+
+//  create grid
+candyGrid.x = 50
+candyGrid.y = 50
+candyGrid.interactive = true
+let candyGridGraphic = new PIXI.Graphics()
+candyGridGraphic.x = 50
+candyGridGraphic.y = 50
+candyGridGraphic.beginFill(0x8eb8fa) //0x8eb8fa
+candyGridGraphic.lineStyle(2, 0x0, 1)
+candyGridGraphic.drawRoundedRect(0,0,600, 600 , 14)
+
+app.stage.addChild(candyGridGraphic)
+app.stage.addChild(candyGrid)
 
 app.stage.addChild(scoreText);
 
@@ -36,33 +64,15 @@ function randomCandy() {
     return candies[Math.floor(Math.random() * candies.length)]
 }
 
-
+// event listeners see bottom of file
 candyGrid.on("mousemove", onMouseMove);
 candyGrid.on("mousedown", onMouseDown);
 candyGrid.on("mouseup", onMouseUp);
 candyGrid.on("mouseout", onMouseOut);
 
-// initial game
-newGame()
-
-function newGame() {
-    //  create grid
-    candyGrid.x = 50
-    candyGrid.y = 50
-    candyGrid.interactive = true
-    const candyGridGraphic = new PIXI.Graphics()
-    candyGridGraphic.x = 50
-    candyGridGraphic.y = 50
-    candyGridGraphic.beginFill(0x8eb8fa) //0x8eb8fa
-    candyGridGraphic.lineStyle(2, 0x000, 1)
-    candyGridGraphic.drawRect(0,0,600, 600)
-
-    app.stage.addChild(candyGridGraphic)
-    app.stage.addChild(candyGrid)
-
-    createGrid()
-    gameLoop(0)
-}
+// initialise game
+createGrid()
+gameLoop(0)
 
 function createGrid() {
     let done = false 
@@ -92,6 +102,7 @@ function gameLoop(time) {
     // if gamestate is false update with animations
     updateGrid(time)
     scoreText.text = "Score: " + score
+    // borderGraphic.rotation += .01
     drawCandy()
     requestAnimationFrame(gameLoop);
 }
@@ -298,11 +309,10 @@ function drawCandy() {
             let shift = candyGridArray[r][c].shift;
             let candy = candyGridArray[r][c].sprite
             if (candy) {
-                candy.x = 50 + (c + shift * animationtime/animationtimetotal) * 60
-                candy.y = 50 + r * 60
+                candy.x = 60 + (c + shift * animationtime/animationtimetotal) * 60
+                candy.y = 60 + r * 60
                 candy.alpha = 1
                 candyGrid.addChild(candy)
-
             }
         }
     }
