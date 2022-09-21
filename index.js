@@ -70,6 +70,8 @@ candyGrid.on("mousedown", onMouseDown);
 candyGrid.on("mouseup", onMouseUp);
 candyGrid.on("mouseout", onMouseOut);
 
+
+
 // initialise game
 createGrid()
 gameLoop(0)
@@ -104,6 +106,7 @@ function gameLoop(time) {
     scoreText.text = "Score: " + score
     // borderGraphic.rotation += .01
     drawCandy()
+    
     requestAnimationFrame(gameLoop);
 }
 
@@ -112,6 +115,7 @@ function updateGrid(time) {
     lastTime = time;
 
     if (gamestate === false) {
+        candyGrid.interactive = false
         // move and animate candy
         animationtime += dt;
         if (animationstate === 0) {
@@ -130,6 +134,7 @@ function updateGrid(time) {
                 } else {
                     // No clusters found, animation complete
                     gamestate = true;
+                    candyGrid.interactive = true
                 }
                 animationtime = 0;
                                     
@@ -149,6 +154,7 @@ function updateGrid(time) {
                 if (clusters.length <= 0) {
                     // Animation complete
                     gamestate = true;
+                    candyGrid.interactive = true
                 }
             }
         } else if (animationstate === 2) {
@@ -181,6 +187,7 @@ function updateGrid(time) {
                 
                 // Animation complete
                 gamestate = true;
+                candyGrid.interactive = true
             }
         }
         
@@ -295,11 +302,11 @@ function changeToBlankTexture(col, row) {
         candy.rotation = 0
         candy.scale.x = 1;
         candy.scale.y = 1;
-        // explosion.stop()
     } else {
         candy.rotation += 7;
         candy.scale.x *= 0.5;
         candy.scale.y *= 0.5;
+
     }
 }
 
@@ -308,12 +315,15 @@ function drawCandy() {
     for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
             let shift = candyGridArray[r][c].shift;
+            let candyContainer = new PIXI.Container()
             let candy = candyGridArray[r][c].sprite
             if (candy) {
                 candy.x = 60 + (c + shift * animationtime/animationtimetotal) * 60
                 candy.y = 60 + r * 60
                 candy.alpha = 1
-                candyGrid.addChild(candy)
+                candyContainer.addChild(candy)
+                candyContainer.addChild(candy)
+                candyGrid.addChild(candyContainer)
             }
         }
     }
@@ -349,7 +359,7 @@ function onMouseDown(e) {
         }
     }
     drag = true;
-    // console.log(selectedCandy)
+    // console.log(candyGrid)
 }
 
 function onMouseUp(e) {
