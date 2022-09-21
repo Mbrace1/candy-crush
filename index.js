@@ -295,6 +295,7 @@ function changeToBlankTexture(col, row) {
         candy.rotation = 0
         candy.scale.x = 1;
         candy.scale.y = 1;
+        // explosion.stop()
     } else {
         candy.rotation += 7;
         candy.scale.x *= 0.5;
@@ -374,8 +375,8 @@ function onMouseMove(e) {
 
 
 function getMouseTile(pos) {
-    var tx = Math.floor((pos.x -candyGrid.x) / 60);
-    var ty = Math.floor((pos.y -candyGrid.y) / 60);
+    var tx = Math.floor((pos.x -candyGrid.x) / 65);
+    var ty = Math.floor((pos.y -candyGrid.y) / 65);
     
     if (tx >= 0 && tx < cols && ty >= 0 && ty < rows) {
         return {
