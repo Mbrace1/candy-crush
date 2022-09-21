@@ -14,15 +14,18 @@ let candyGridArray = []
 const candyGrid = new PIXI.Container()
 candyGrid.x = 50
 candyGrid.y = 50
-var currCandy
-var otherCandy
+let currCandy
+let otherCandy
 let blankTexture = PIXI.Texture.from(`./img/blank.png`)
 
 const candyGridGraphic = new PIXI.Graphics()
 candyGridGraphic.beginFill(0x8eb8fa)
 candyGridGraphic.lineStyle(2, 0x000, 1)
-candyGridGraphic.drawRect(0,0,600, 600)
+candyGridGraphic.drawRect(0, 0, 600, 600)
 candyGrid.addChild(candyGridGraphic)
+
+let gameState = true
+let clusters = []
 
 const candyGridContent = new PIXI.Container()
 
@@ -40,8 +43,8 @@ for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
         let texture = PIXI.Texture.from(`./img/${randomCandy()}.png`)
         let body = new PIXI.Sprite(texture)
-        body.position.x = 5 + (candyGrid.width/9) * c
-        body.position.y = 5 + (candyGrid.height/9) * r
+        body.position.x = 5 + (candyGrid.width / 9) * c
+        body.position.y = 5 + (candyGrid.height / 9) * r
         body.anchor.set(0.5);
         body.interactive = true
         body.accessibleTitle = `${r}-${c}`
@@ -50,7 +53,7 @@ for (let r = 0; r < rows; r++) {
         body.on("pointerdown", dragStart)
         body.on("pointerover", dragOver)
         // this.body.on("pointerupoutside", this.dragEnd.bind(this))
-        body.on("pointerup", dragEnd)       
+        body.on("pointerup", dragEnd)
     }
     candyGridContent.addChild(row)
 }
@@ -88,7 +91,7 @@ function dragEnd(e) {
 
     let nextTo = moveLeft || moveRight || moveUp || moveDown
 
-    if(nextTo) {
+    if (nextTo) {
         swap(otherCandy, "texture", currCandy, "texture")
 
         let check = isValid(r1, c1)
@@ -108,42 +111,89 @@ function dragEnd(e) {
 
 function swap(obj1, key1, obj2, key2) {
     [obj1[key1], obj2[key2]] = [obj2[key2], obj1[key1]];
- }
+}
 
- function checkThreeOrMore (lastTime) {
-    for(let r = 0; r < rows; r++) {
-        for(let c = 0; c < cols - 2; c++) {
-            let candy1 = candyGridContent.children[r].children[c]
-            let candy2 = candyGridContent.children[r].children[c+1]
-            let candy3 = candyGridContent.children[r].children[c+2]
-            if (candy1.texture === candy2.texture && candy2.texture === candy3.texture && candy1.texture !== blankTexture) {
-                removeCandy(candy1)
-                removeCandy(candy2)
-                removeCandy(candy3)
+function checkThreeOrMore(lastTime) {
+    clusters = []
+    // cols check
+    for (var c = 0; c < rows; c++) {
+        var matchlength = 1;
+        for (var r = 0; r < cols; r++) {
+            var checkcluster = false;
+            if (r == cols - 1) {
+                checkcluster = true;
+            } else {
+                if (candyGridContent.children[r].children[c].texture == candyGridContent.children[r +1].children[c].texture &&
+                    candyGridContent.children[r].children[c].texture != blankTexture) {
+                    matchlength++;
+                } else {
+                    checkcluster = true
+                }
+            }
+
+            if (checkcluster) {
+                if (matchlength >= 3) {
+                    clusters.push({ row: r + 1 - matchlength, col: c, length: matchlength, horizontal: false })
+                }
+                matchlength = 1
             }
         }
     }
-    for(let c = 0; c < cols; c++) {
-        for(let r = 0; r < rows - 2; r++) {
-            let candy1 = candyGridContent.children[r].children[c]
-            let candy2 = candyGridContent.children[r+1].children[c]
-            let candy3 = candyGridContent.children[r+2].children[c]
-            if (candy1.texture === candy2.texture && candy2.texture === candy3.texture && candy1.texture !== blankTexture) {
-                removeCandy(candy1)
-                removeCandy(candy2)
-                removeCandy(candy3)
+    // row check
+    for (var r = 0; r < rows; r++) {
+        var matchlength = 1;
+        for (var c = 0; c < cols; c++) {
+            var checkcluster = false;
+
+            if (c == rows - 1) {
+                checkcluster = true;
+            } else {
+                if (candyGridContent.children[r].children[c].texture == candyGridContent.children[r].children[c +1].texture &&
+                    candyGridContent.children[r].children[c].texture != blankTexture) {
+                    matchlength++;
+                } else {
+                    checkcluster = true;
+                }
+            }
+
+            if (checkcluster) {
+                if (matchlength >= 3) {
+                    clusters.push({
+                        row: r, col: c + 1 - matchlength,
+                        length: matchlength, horizontal: true
+                    });
+                }
+
+                matchlength = 1;
             }
         }
     }
 }
 
-function isValid (r1, c1) {
+function removeThreeOrMore() {
+    for (var i=0; i< clusters.length; i++) {
+        let line = clusters[i]
+        let colOffset = 0
+        let rowOffset = 0
+        for (var j=0; j<line.length; j++) {
+            removeCandy(candyGridContent.children[line.row + rowOffset].children[line.col + colOffset])
+            if (line.horizontal) {
+                colOffset++;
+            } else {
+                rowOffset++;
+            }
+        }
+    }
+}
+
+
+function isValid(r1, c1) {
     // console.log(candyGridContent)
-    for(let r = 1; r < rows; r++) {
-        for(let c = 0; c < cols - 2; c++) {
+    for (let r = 1; r < rows; r++) {
+        for (let c = 0; c < cols - 2; c++) {
             let candy1 = candyGridContent.children[r].children[c]
-            let candy2 = candyGridContent.children[r].children[c+1]
-            let candy3 = candyGridContent.children[r].children[c+2]
+            let candy2 = candyGridContent.children[r].children[c + 1]
+            let candy3 = candyGridContent.children[r].children[c + 2]
             if (candy1.texture === candy2.texture && candy2.texture === candy3.texture && candy1.texture !== blankTexture) {
                 console.log(candy1.texture)
                 console.log(candy2.texture)
@@ -152,11 +202,11 @@ function isValid (r1, c1) {
             }
         }
     }
-    for(let c = 0; c < cols; c++) {
-        for(let r = 0; r < rows - 2; r++) {
+    for (let c = 0; c < cols; c++) {
+        for (let r = 0; r < rows - 2; r++) {
             let candy1 = candyGridContent.children[r].children[c]
-            let candy2 = candyGridContent.children[r+1].children[c]
-            let candy3 = candyGridContent.children[r+2].children[c]
+            let candy2 = candyGridContent.children[r + 1].children[c]
+            let candy3 = candyGridContent.children[r + 2].children[c]
             if (candy1.texture === candy2.texture && candy2.texture === candy3.texture && candy1.texture !== blankTexture) {
                 console.log("true")
                 console.log(candy1.texture)
@@ -171,9 +221,9 @@ function isValid (r1, c1) {
 }
 
 function moveCandy() {
-    for(let c = 0; c < cols; c++) {
-        let index = rows -1
-        for(let r = rows - 1; r >= 0; r--) {
+    for (let c = 0; c < cols; c++) {
+        let index = rows - 1
+        for (let r = rows - 1; r >= 0; r--) {
             // check texture is not blank
             if (candyGridContent.children[r].children[c].texture !== blankTexture) {
                 // leave texture
@@ -190,7 +240,7 @@ function moveCandy() {
 
 function addNewCandy() {
     // add candy to first row, which then drops down during moveCandy()
-    for(let c = 0; c < cols; c++) {
+    for (let c = 0; c < cols; c++) {
         if (candyGridContent.children[0].children[c].texture === blankTexture) {
             candyGridContent.children[0].children[c].texture = PIXI.Texture.from(`./img/${randomCandy()}.png`)
         }
@@ -204,10 +254,12 @@ function removeCandy(candy) {
         candy.scale.x = 1;
         candy.scale.y = 1;
         candy.texture = blankTexture
+        gameState = true
     } else {
         candy.rotation += 0.1;
         candy.scale.x *= 0.99;
         candy.scale.y *= 0.99;
+        gameState = false
     }
 
 }
@@ -219,9 +271,11 @@ app.stage.addChild(candyGrid)
 
 function gameLoop(lastTime) {
     checkThreeOrMore(lastTime)
-    moveCandy()
-    // console.log(lastTime)
-    addNewCandy()
+    removeThreeOrMore()
+    if (gameState) {
+        moveCandy()
+        addNewCandy()
+    }
     requestAnimationFrame(gameLoop);
 }
 
@@ -229,6 +283,6 @@ let lastTime = 0
 let removeCandyTime = 0
 gameLoop(lastTime)
 
-// to do 
+// to do
 // able to remove more than three candies
 // add some animations
