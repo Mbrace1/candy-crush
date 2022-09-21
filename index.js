@@ -117,16 +117,9 @@ function swap(obj1, key1, obj2, key2) {
             let candy2 = candyGridContent.children[r].children[c+1]
             let candy3 = candyGridContent.children[r].children[c+2]
             if (candy1.texture === candy2.texture && candy2.texture === candy3.texture && candy1.texture !== blankTexture) {
-                startAnimation(candy1)
-                startAnimation(candy2)
-                startAnimation(candy3)
-
-                setTimeout(() => {
-                    removeAnimation(candy1)
-                    removeAnimation(candy2)
-                    removeAnimation(candy3)
-                    moveCandy()
-                }, 1200)
+                removeCandy(candy1)
+                removeCandy(candy2)
+                removeCandy(candy3)
             }
         }
     }
@@ -136,16 +129,9 @@ function swap(obj1, key1, obj2, key2) {
             let candy2 = candyGridContent.children[r+1].children[c]
             let candy3 = candyGridContent.children[r+2].children[c]
             if (candy1.texture === candy2.texture && candy2.texture === candy3.texture && candy1.texture !== blankTexture) {
-                startAnimation(candy1)
-                startAnimation(candy2)
-                startAnimation(candy3)
-
-                setTimeout(() => {
-                    removeAnimation(candy1)
-                    removeAnimation(candy2)
-                    removeAnimation(candy3)
-                    moveCandy()
-                }, 1200)
+                removeCandy(candy1)
+                removeCandy(candy2)
+                removeCandy(candy3)
             }
         }
     }
@@ -212,17 +198,18 @@ function addNewCandy() {
 }
 
 // animations
-function startAnimation(candy) {
-    candy.rotation += 0.1;
-    candy.scale.x *= 0.99;
-    candy.scale.y *= 0.99;
-}
-// animations
-function removeAnimation(candy) {
-    candy.rotation = 0
-    candy.scale.x = 1;
-    candy.scale.y = 1;
-    candy.texture = blankTexture
+function removeCandy(candy) {
+    if (candy.scale.x < 0.2) {
+        candy.rotation = 0
+        candy.scale.x = 1;
+        candy.scale.y = 1;
+        candy.texture = blankTexture
+    } else {
+        candy.rotation += 0.1;
+        candy.scale.x *= 0.99;
+        candy.scale.y *= 0.99;
+    }
+
 }
 
 console.log(candyGridContent)
@@ -234,7 +221,7 @@ function gameLoop(lastTime) {
     checkThreeOrMore(lastTime)
     moveCandy()
     // console.log(lastTime)
-    // addNewCandy()
+    addNewCandy()
     requestAnimationFrame(gameLoop);
 }
 
