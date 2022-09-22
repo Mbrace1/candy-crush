@@ -44,6 +44,17 @@ scoreText.style = new PIXI.TextStyle({
     lineJoin: 'round',
 })
 
+const fireworkTextures = []
+for(let i = 1; i < 26 ;i++) {
+    const fireTexture = PIXI.Texture.from(`./img/explosion/Firework${i}.png`)
+    fireworkTextures.push(fireTexture)
+}
+
+let fireworks = new PIXI.AnimatedSprite(fireworkTextures)
+fireworks.animationSpeed = 0.5
+fireworks.anchor.x = 0.5
+fireworks.anchor.y = 0.5
+
 //  create grid
 candyGrid.x = 50
 candyGrid.y = 50
@@ -297,16 +308,19 @@ function moveCandyDown() {
 
 function changeToBlankTexture(col, row) {
     let candy = candyGridArray[row][col].sprite
+
+    fireworks.play()
     if (candy.scale.x < 0.2) {
         candy.texture = blankTexture
         candy.rotation = 0
         candy.scale.x = 1;
         candy.scale.y = 1;
+        candy.removeChild(fireworks)
     } else {
         candy.rotation += 7;
         candy.scale.x *= 0.5;
         candy.scale.y *= 0.5;
-
+        candy.addChild(fireworks)
     }
 }
 
@@ -321,7 +335,6 @@ function drawCandy() {
                 candy.x = 60 + (c + shift * animationtime/animationtimetotal) * 60
                 candy.y = 60 + r * 60
                 candy.alpha = 1
-                candyContainer.addChild(candy)
                 candyContainer.addChild(candy)
                 candyGrid.addChild(candyContainer)
             }
