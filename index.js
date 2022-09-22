@@ -10,53 +10,67 @@ document.body.appendChild(app.view);
 let candies = ["Red", "Blue", "Green", "Orange", "Yellow", "Purple"]
 let cols = 9
 let rows = 9
-let candyGrid = new PIXI.Container()
-let candyGridArray = new PIXI.Container()
-candyGrid.x = 50
-candyGrid.y = 50
-candyGrid.width = 600
-candyGrid.height = 600
-let currCandy
-let otherCandy
-let currCandyGridPos
-let otherCandyGridPos
-
-const candyGridGraphic = new PIXI.Graphics()
-candyGridGraphic.beginFill(0x8eb8fa)
-candyGridGraphic.lineStyle(2, 0x000, 1)
-candyGridGraphic.drawRect(0,0,600, 600)
-candyGrid.addChild(candyGridGraphic)
-candyGrid.addChild(candyGridArray)
-
+let cellWidth = 60
+let cellHeight = 60
 function randomCandy() {
     return candies[Math.floor(Math.random() * candies.length)]
 }
 
-for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < cols; c++) {
-        let texture = PIXI.Texture.from(`./img/${randomCandy()}.png`)
-        let body = new PIXI.Sprite(texture)
-        // body.position.x = (candyGrid.width/cols) * c 
-        // body.position.y = (candyGrid.height/rows) * r
-        body.interactive = true
+// const candyGridGraphic = new PIXI.Graphics()
+// candyGridGraphic.beginFill(0x8eb8fa)
+// candyGridGraphic.lineStyle(2, 0x000, 1)
+// candyGridGraphic.drawRect(0,0,600, 600)
+// candyGrid.addChild(candyGridGraphic)
+let candyGrid = new PIXI.Container()
+candyGrid.on("mousedown", onMouseDown);
 
-        //  event listeners
-        body.on("pointerdown", dragStart)
-        // body.on("pointerover", dragOver)
-        // body.on("pointerup", dragEnd)
+let array = []
+class Cell {
+    constructor(x, y, type, candyGrid) {
+        this.candyGrid = candyGrid
+        this.type = type
+        this.texture = PIXI.Texture.from(`./img/${type}.png`)
+        this.body = new PIXI.Sprite(this.texture)
+        this.body.position.x = x
+        this.body.position.y = y
 
-        candyGridArray.addChild(body)
+    }
+
+    update(newX, newY) {
+        this.body.position.x = this.body.position.x + newX
+        this.body.position.y = this.body.position.y + newY
+    }
+
+    render() {
+        this.candyGrid.addChild(this.body)
     }
 }
 
-let pos1 = candyGridArray
-let pos2 = candyGridArray
+function createBoard() {
+    candyGrid.interactive = true
+    app.stage.addChild(candyGrid)
 
-app.stage.addChild(candyGrid)
+    for (let r = 0; r < rows; r++) {
+        let row = []
+        for (let c = 0; c < cols; c++) {
+            let cell = new Cell(r*cellWidth + 50, c*cellHeight + 50, randomCandy(), candyGrid)
+            // row.addChild(cell.body)
+            row.push(cell)
+        }
+        array.push(row)
+    }
+}
+
+createBoard()
+
 
 function gameLoop() {
+    candyGrid.removeChildren()
+    // update()
     render()
     requestAnimationFrame(gameLoop);
+    // console.log("hi")
+    
 }
 
 gameLoop()
@@ -64,17 +78,30 @@ gameLoop()
 function render() {
     for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
-            candyGridArray.children[r].position.x = (candyGrid.width/cols) * c 
-            candyGridArray.children[r].position.y = (candyGrid.height/rows) * r
+            array[r][c].render()
+        }
+    }
+}
+function update() {
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+            console.log(array[r][c].update(5, 5))
         }
     }
 }
 
-function dragStart(e) {
-    let newPos = pos1
-    pos1 = pos2
-    pos2 = newPos
-    console.log(pos1)
-    console.log(pos2)
-    // re render
+function swap() {
+    console.log(array[0][0].body.position.y)
+    console.log(array[0][1].body.position.y)
+    let pos1= array[0][0].body.position.y
+    let pos2= array[0][1].body.position.y
+    
+    array[0][0].update(0, cellHeight)
+    array[0][1].update(0, -cellHeight)
+}
+
+
+function onMouseDown(e) {
+    console.log("swap")
+    swap()
 }
