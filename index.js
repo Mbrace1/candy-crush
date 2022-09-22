@@ -118,54 +118,21 @@ candyGrid.on("mousedown", onMouseDown);
 candyGrid.on("mouseup", onMouseUp);
 candyGrid.on("mouseout", onMouseOut);
 
-const candyRed = new PIXI.ParticleContainer(particleNum, {
+let particleContainer = {
     scale: true,
     position: true,
     rotation: true,
     uvs: true,
     alpha: true,
-});
-const candyBlue = new PIXI.ParticleContainer(particleNum, {
-    scale: true,
-    position: true,
-    rotation: true,
-    uvs: true,
-    alpha: true,
-});
-const candyGreen = new PIXI.ParticleContainer(particleNum, {
-    scale: true,
-    position: true,
-    rotation: true,
-    uvs: true,
-    alpha: true,
-});
-const candyOrange = new PIXI.ParticleContainer(particleNum, {
-    scale: true,
-    position: true,
-    rotation: true,
-    uvs: true,
-    alpha: true,
-});
-const candyYellow = new PIXI.ParticleContainer(particleNum, {
-    scale: true,
-    position: true,
-    rotation: true,
-    uvs: true,
-    alpha: true,
-});
-const candyPurple = new PIXI.ParticleContainer(particleNum, {
-    scale: true,
-    position: true,
-    rotation: true,
-    uvs: true,
-    alpha: true,
-});
-app.stage.addChild(candyPurple);
-app.stage.addChild(candyOrange);
-app.stage.addChild(candyGreen);
-app.stage.addChild(candyYellow);
-app.stage.addChild(candyBlue);
-app.stage.addChild(candyRed);
+}
+
+const candyRed = new PIXI.ParticleContainer(particleNum, particleContainer);
+const candyBlue = new PIXI.ParticleContainer(particleNum, particleContainer);
+const candyGreen = new PIXI.ParticleContainer(particleNum, particleContainer);
+const candyOrange = new PIXI.ParticleContainer(particleNum, particleContainer);
+const candyYellow = new PIXI.ParticleContainer(particleNum, particleContainer);
+const candyPurple = new PIXI.ParticleContainer(particleNum, particleContainer);
+app.stage.addChild(candyRed,candyPurple, candyOrange, candyGreen, candyYellow, candyBlue);
 
 // create an array to store all the sprites
 const maggots = [];
@@ -185,7 +152,7 @@ function addParticles(colorComponent, totalSprites, color) {
         let candyBg = new PIXI.Sprite(texture)
         // set the anchor point so the texture is centerd on the sprite
         candyBg.anchor.set(0.5);
-        candyBg.alpha = .6
+        candyBg.alpha = .4
         // different maggots, different sizes
         candyBg.scale.set(0.8 + Math.random() * 0.3);
     
@@ -193,7 +160,7 @@ function addParticles(colorComponent, totalSprites, color) {
         candyBg.x = Math.random() * app.screen.width;
         candyBg.y = Math.random() * app.screen.height;
     
-        // candyBg.tint = Math.random() * 0x808080;
+        // candyBg.tint = Math.random() * 0xBF40BF;
     
         // create a random direction in radians
         candyBg.direction = Math.random() * Math.PI * 2;
