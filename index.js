@@ -83,6 +83,7 @@ candyGrid.interactive = true
 let candyGridGraphic = new PIXI.Graphics()
 candyGridGraphic.x = 50
 candyGridGraphic.y = 50
+candyGridGraphic.alpha = .7
 candyGridGraphic.beginFill(0x8eb8fa) //0x8eb8fa
 candyGridGraphic.lineStyle(2, 0x0, 1)
 candyGridGraphic.drawRoundedRect(0,0,600, 600 , 14)
@@ -184,7 +185,7 @@ function addParticles(colorComponent, totalSprites, color) {
         let candyBg = new PIXI.Sprite(texture)
         // set the anchor point so the texture is centerd on the sprite
         candyBg.anchor.set(0.5);
-        candyBg.alpha = .7
+        candyBg.alpha = .6
         // different maggots, different sizes
         candyBg.scale.set(0.8 + Math.random() * 0.3);
     
