@@ -14,19 +14,16 @@ let candyGrid = new PIXI.Container()
 let candyGridArray = []
 let lastTime = 0;
 let animationtime = 0;
-let animationtimetotal = .3;
+let animationtimetotal = .5;
 let selectedCandy = {col: 0, row: 0, selected: false}
 let drag = false;
 let gamestate = true
 let blankTexture = PIXI.Texture.from(`./img/blank.png`)
 let clusters = []
 let currentmove = {column1: 0, row1: 0, column2: 0, row2: 0};
-let score = 0
 
-let scoreText = new PIXI.Text('Score: ' + score);
-scoreText.x = 700;
-scoreText.y = 100;
-scoreText.style = new PIXI.TextStyle({
+// score
+let scoreStyle = {
     fontFamily: 'Arial',
     fontSize: 30,
     fontStyle: 'italic',
@@ -42,7 +39,21 @@ scoreText.style = new PIXI.TextStyle({
     wordWrap: true,
     wordWrapWidth: 440,
     lineJoin: 'round',
-})
+}
+let score = 0
+let scoreContainer = new PIXI.Container()
+scoreContainer.x = 700;
+scoreContainer.y = 100;
+let scoreText1 = new PIXI.Text('Score: ');
+scoreText1.x = 0
+scoreText1.anchor.y = 0.5
+let scoreText2 = new PIXI.Text(score);
+scoreText2.anchor.y = 0.5
+scoreText2.x = 20 + scoreText1.width
+scoreText1.style = new PIXI.TextStyle(scoreStyle)
+scoreText2.style = new PIXI.TextStyle(scoreStyle)
+
+
 
 const fireworkTextures = []
 for(let i = 1; i < 26 ;i++) {
@@ -50,10 +61,20 @@ for(let i = 1; i < 26 ;i++) {
     fireworkTextures.push(fireTexture)
 }
 
-let fireworks = new PIXI.AnimatedSprite(fireworkTextures)
-fireworks.animationSpeed = 0.5
-fireworks.anchor.x = 0.5
-fireworks.anchor.y = 0.5
+let fireworks1 = new PIXI.AnimatedSprite(fireworkTextures)
+let fireworks2 = new PIXI.AnimatedSprite(fireworkTextures)
+let fireworks3 = new PIXI.AnimatedSprite(fireworkTextures)
+let fireworks4 = new PIXI.AnimatedSprite(fireworkTextures)
+
+setSame(fireworks1)
+setSame(fireworks2)
+setSame(fireworks3)
+setSame(fireworks4)
+function setSame(fireworks) {
+    fireworks.animationSpeed = 0.5
+    fireworks.anchor.x = 0.5
+    fireworks.anchor.y = 0.5
+}
 
 //  create grid
 candyGrid.x = 50
@@ -66,10 +87,32 @@ candyGridGraphic.beginFill(0x8eb8fa) //0x8eb8fa
 candyGridGraphic.lineStyle(2, 0x0, 1)
 candyGridGraphic.drawRoundedRect(0,0,600, 600 , 14)
 
+let fireworkContainer1 = new PIXI.Container()
+fireworkContainer1.x = 50
+fireworkContainer1.y = 90
+fireworkContainer1.addChild(fireworks1)
+
+let fireworkContainer2 = new PIXI.Container()
+fireworkContainer2.x = 650
+fireworkContainer2.y = 90
+fireworkContainer2.addChild(fireworks2)
+
+let fireworkContainer3 = new PIXI.Container()
+fireworkContainer3.x = 650
+fireworkContainer3.y = 670
+fireworkContainer3.addChild(fireworks3)
+
+let fireworkContainer4 = new PIXI.Container()
+fireworkContainer4.x = 50
+fireworkContainer4.y = 670
+fireworkContainer4.addChild(fireworks4)
+
 app.stage.addChild(candyGridGraphic)
 app.stage.addChild(candyGrid)
 
-app.stage.addChild(scoreText);
+scoreContainer.addChild(scoreText1);
+scoreContainer.addChild(scoreText2);
+app.stage.addChild(scoreContainer);
 
 function randomCandy() {
     return candies[Math.floor(Math.random() * candies.length)]
@@ -114,7 +157,7 @@ function createGrid() {
 function gameLoop(time) {
     // if gamestate is false update with animations
     updateGrid(time)
-    scoreText.text = "Score: " + score
+    scoreText2.text = score
     // borderGraphic.rotation += .01
     drawCandy()
     
@@ -136,7 +179,13 @@ function updateGrid(time) {
                     // Add points to the score
                     for (var i=0; i<clusters.length; i++) {
                         // Add extra points for longer clusters
-                        score += 10 * (clusters[i].length - 2);;
+                        score += 30 * (clusters[i].length - 2);
+                        scoreText2.style.fontSize += 3
+                        app.stage.addChild(fireworkContainer1, fireworkContainer2, fireworkContainer3,fireworkContainer4)
+                        fireworks1.play()
+                        fireworks2.play()
+                        fireworks3.play()
+                        fireworks4.play()
                     }
 
                     removeThreeOrMore();
@@ -144,11 +193,9 @@ function updateGrid(time) {
 
                 } else {
                     // No clusters found, animation complete
-                    gamestate = true;
-                    candyGrid.interactive = true
+                    continueGame()
                 }
                 animationtime = 0;
-                                    
             }
         } else if (animationstate === 1) {
             if (animationtime > animationtimetotal) {
@@ -164,8 +211,7 @@ function updateGrid(time) {
                 findThreeOrMore();
                 if (clusters.length <= 0) {
                     // Animation complete
-                    gamestate = true;
-                    candyGrid.interactive = true
+                    continueGame()
                 }
             }
         } else if (animationstate === 2) {
@@ -197,13 +243,22 @@ function updateGrid(time) {
                 swap(currentmove.column1, currentmove.row1, currentmove.column2, currentmove.row2);
                 
                 // Animation complete
-                gamestate = true;
-                candyGrid.interactive = true
+                continueGame()
             }
         }
         
         findThreeOrMore()
     }
+}
+
+function continueGame() {
+    setTimeout(() => {
+        gamestate = true;
+        candyGrid.interactive = true
+        scoreText2.style.fontSize = 30
+        app.stage.removeChild(fireworkContainer1, fireworkContainer2, fireworkContainer3,fireworkContainer4)
+    }, 2000)
+
 }
 
 function findThreeOrMore() {
@@ -308,20 +363,20 @@ function moveCandyDown() {
 
 function changeToBlankTexture(col, row) {
     let candy = candyGridArray[row][col].sprite
+    candy.texture = blankTexture
 
-    fireworks.play()
-    if (candy.scale.x < 0.2) {
-        candy.texture = blankTexture
-        candy.rotation = 0
-        candy.scale.x = 1;
-        candy.scale.y = 1;
-        candy.removeChild(fireworks)
-    } else {
-        candy.rotation += 7;
-        candy.scale.x *= 0.5;
-        candy.scale.y *= 0.5;
-        candy.addChild(fireworks)
-    }
+    // fireworks.play()
+    // if (candy.scale.x < 0.2) {
+    //     candy.rotation = 0
+    //     candy.scale.x = 1;
+    //     candy.scale.y = 1;
+    //     candy.removeChild(fireworks)
+    // } else {
+    //     candy.rotation += 7;
+    //     candy.scale.x *= 0.5;
+    //     candy.scale.y *= 0.5;
+    //     candy.addChild(fireworks)
+    // }
 }
 
 function drawCandy() {
