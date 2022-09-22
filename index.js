@@ -14,14 +14,14 @@ let candyGrid = new PIXI.Container()
 let candyGridArray = []
 let lastTime = 0;
 let animationtime = 0;
-let animationtimetotal = .5;
+let animationtimetotal = .8;
 let selectedCandy = {col: 0, row: 0, selected: false}
 let drag = false;
 let gamestate = true
 let blankTexture = PIXI.Texture.from(`./img/blank.png`)
 let clusters = []
 let currentmove = {column1: 0, row1: 0, column2: 0, row2: 0};
-
+let particleNum = 200
 // score
 let scoreStyle = {
     fontFamily: 'Arial',
@@ -107,13 +107,6 @@ fireworkContainer4.x = 50
 fireworkContainer4.y = 670
 fireworkContainer4.addChild(fireworks4)
 
-app.stage.addChild(candyGridGraphic)
-app.stage.addChild(candyGrid)
-
-scoreContainer.addChild(scoreText1);
-scoreContainer.addChild(scoreText2);
-app.stage.addChild(scoreContainer);
-
 function randomCandy() {
     return candies[Math.floor(Math.random() * candies.length)]
 }
@@ -124,7 +117,123 @@ candyGrid.on("mousedown", onMouseDown);
 candyGrid.on("mouseup", onMouseUp);
 candyGrid.on("mouseout", onMouseOut);
 
+const candyRed = new PIXI.ParticleContainer(particleNum, {
+    scale: true,
+    position: true,
+    rotation: true,
+    uvs: true,
+    alpha: true,
+});
+const candyBlue = new PIXI.ParticleContainer(particleNum, {
+    scale: true,
+    position: true,
+    rotation: true,
+    uvs: true,
+    alpha: true,
+});
+const candyGreen = new PIXI.ParticleContainer(particleNum, {
+    scale: true,
+    position: true,
+    rotation: true,
+    uvs: true,
+    alpha: true,
+});
+const candyOrange = new PIXI.ParticleContainer(particleNum, {
+    scale: true,
+    position: true,
+    rotation: true,
+    uvs: true,
+    alpha: true,
+});
+const candyYellow = new PIXI.ParticleContainer(particleNum, {
+    scale: true,
+    position: true,
+    rotation: true,
+    uvs: true,
+    alpha: true,
+});
+const candyPurple = new PIXI.ParticleContainer(particleNum, {
+    scale: true,
+    position: true,
+    rotation: true,
+    uvs: true,
+    alpha: true,
+});
+app.stage.addChild(candyPurple);
+app.stage.addChild(candyOrange);
+app.stage.addChild(candyGreen);
+app.stage.addChild(candyYellow);
+app.stage.addChild(candyBlue);
+app.stage.addChild(candyRed);
 
+// create an array to store all the sprites
+const maggots = [];
+
+const totalcandyRed = app.renderer instanceof PIXI.Renderer ? particleNum : 100;
+const totalcandyBlue = app.renderer instanceof PIXI.Renderer ? particleNum : 100;
+const totalcandyGreen = app.renderer instanceof PIXI.Renderer ? particleNum : 100;
+const totalcandyOrange = app.renderer instanceof PIXI.Renderer ? particleNum : 100;
+const totalcandyYellow = app.renderer instanceof PIXI.Renderer ? particleNum : 100;
+const totalcandyPurple = app.renderer instanceof PIXI.Renderer ? particleNum : 100;
+
+function addParticles(colorComponent, totalSprites, color) {
+    
+    for (let i = 0; i < totalSprites; i++) {
+        // create a new Sprite
+        let texture = new PIXI.Texture.from(`./img/${color}.png`)
+        let candyBg = new PIXI.Sprite(texture)
+        // set the anchor point so the texture is centerd on the sprite
+        candyBg.anchor.set(0.5);
+        candyBg.alpha = .7
+        // different maggots, different sizes
+        candyBg.scale.set(0.8 + Math.random() * 0.3);
+    
+        // scatter them all
+        candyBg.x = Math.random() * app.screen.width;
+        candyBg.y = Math.random() * app.screen.height;
+    
+        // candyBg.tint = Math.random() * 0x808080;
+    
+        // create a random direction in radians
+        candyBg.direction = Math.random() * Math.PI * 2;
+    
+        // this number will be used to modify the direction of the sprite over time
+        candyBg.turningSpeed = Math.random() - 0.8;
+    
+        // create a random speed between 0 - 2, and these maggots are slooww
+        candyBg.speed = (2 + Math.random() * 2) * 0.2;
+    
+        candyBg.offset = Math.random() * 100;
+    
+        // finally we push the candyBg into the maggots array so it it can be easily accessed later
+        maggots.push(candyBg);
+    
+        colorComponent.addChild(candyBg);
+    }
+}
+
+addParticles(candyRed, totalcandyRed, candies[0])
+addParticles(candyBlue, totalcandyBlue, candies[1])
+addParticles(candyGreen, totalcandyGreen, candies[2])
+addParticles(candyOrange, totalcandyOrange, candies[3])
+addParticles(candyYellow, totalcandyYellow, candies[4])
+addParticles(candyPurple, totalcandyPurple, candies[5])
+
+// create a bounding box box for the little maggots
+const candyBgBoundsPadding = 100;
+const candyBgBounds = new PIXI.Rectangle(
+    -candyBgBoundsPadding,
+    -candyBgBoundsPadding,
+    app.screen.width + candyBgBoundsPadding * 2,
+    app.screen.height + candyBgBoundsPadding * 2,
+);
+
+app.stage.addChild(candyGridGraphic)
+app.stage.addChild(candyGrid)
+
+scoreContainer.addChild(scoreText1);
+scoreContainer.addChild(scoreText2);
+app.stage.addChild(scoreContainer);
 
 // initialise game
 createGrid()
@@ -141,6 +250,7 @@ function createGrid() {
                 let candy = new PIXI.Sprite(texture)
                 candy.anchor.set(0.5);
                 candy.interactive = true
+                candy.buttonMode = true;
                 candyGridArray[c][r] = { sprite: candy, shift:0 }
             }
         }
@@ -161,6 +271,29 @@ function gameLoop(time) {
     // borderGraphic.rotation += .01
     drawCandy()
     
+        // iterate through the sprites and update their position
+        for (let i = 0; i < maggots.length; i++) {
+            const candyBg = maggots[i];
+            candyBg.scale.y = 0.95 + Math.sin(time + candyBg.offset) * 0.05;
+            candyBg.direction += candyBg.turningSpeed * 0.01;
+            candyBg.x += Math.sin(candyBg.direction) * (candyBg.speed * candyBg.scale.y);
+            candyBg.y += Math.cos(candyBg.direction) * (candyBg.speed * candyBg.scale.y);
+            candyBg.rotation = -candyBg.direction + Math.PI;
+    
+            // wrap the maggots
+            if (candyBg.x < candyBgBounds.x) {
+                candyBg.x += candyBgBounds.width;
+            } else if (candyBg.x > candyBgBounds.x + candyBgBounds.width) {
+                candyBg.x -= candyBgBounds.width;
+            }
+    
+            if (candyBg.y < candyBgBounds.y) {
+                candyBg.y += candyBgBounds.height;
+            } else if (candyBg.y > candyBgBounds.y + candyBgBounds.height) {
+                candyBg.y -= candyBgBounds.height;
+            }
+        }
+
     requestAnimationFrame(gameLoop);
 }
 
@@ -252,13 +385,10 @@ function updateGrid(time) {
 }
 
 function continueGame() {
-    setTimeout(() => {
         gamestate = true;
         candyGrid.interactive = true
         scoreText2.style.fontSize = 30
         app.stage.removeChild(fireworkContainer1, fireworkContainer2, fireworkContainer3,fireworkContainer4)
-    }, 2000)
-
 }
 
 function findThreeOrMore() {
