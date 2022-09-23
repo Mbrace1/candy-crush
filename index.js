@@ -15,6 +15,7 @@ let cellHeight = 60
 let currentmove = {column1: 0, row1: 0, column2: 0, row2: 0};
 let selectedCandy = {col: 0, row: 0, selected: false}
 let drag = false;
+let gamestate = true
 
 function randomCandy() {
     return candies[Math.floor(Math.random() * candies.length)]
@@ -46,9 +47,20 @@ class Cell {
 
     }
 
-    update(newX, newY) {
-        this.x = this.x + newX
-        this.y = this.y + newY
+    update(value, maxValue, horizontal) {
+        if (horizontal) {
+            if (value < maxValue) {
+                this.x = this.x + 1
+            } else {
+                this.x = this.x - 1
+            }
+        } else {
+            if (value < maxValue) {
+                this.y = this.y + 1
+            } else {
+                this.y = this.y - 1
+            }
+        }
     }
 
     render() {
@@ -78,7 +90,7 @@ createBoard()
 
 function gameLoop() {
     // candyGrid.removeChildren()
-    // update()
+    update()
     render()
     requestAnimationFrame(gameLoop);
     // console.log("hi")
@@ -98,24 +110,24 @@ function render() {
     }
 }
 function update() {
-    for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-            console.log(array[r][c].update(5, 5))
-        }
+    if (gamestate === false) {
+        if (animationstate ===2) {
+            let keepAnimating = true
+            if (keepAnimating) {
+                animationSwap(currentmove.row1, currentmove.column1, currentmove.row2, currentmove.column2)
+            } else {
+                swap(currentmove.row1, currentmove.column1, currentmove.row2, currentmove.column2)
+                animationstate = 0
+                gamestate === true
+            }
+        }    
     }
+    
 }
 
-function swap(r1, c1, r2, c2) {
-    // let candy1 = array[r1-1][c1-1].body.texture
-    // array[r1-1][c1-1].body.texture = array[r2-1][c2-1].body.texture
-    // array[r2-1][c2-1].body.texture = candy1
-
-
+function animationSwap(r1, c1, r2, c2) {
     let candy1 = array[r1][c1]
     let candy2 = array[r2][c2]
-
-    array[r1][c1] = array[r2][c2]
-    array[r2][c2] = candy1
 
     let candy1Col = candy1.body.position.x
     let candy1Row = candy1.body.position.y
@@ -127,24 +139,32 @@ function swap(r1, c1, r2, c2) {
     if (candy1Col < candy2Col) {
         // candy1 is less so move right
         // candy2 is more so move left
-        candy1.update(cellHeight, 0)
-        candy2.update(- cellHeight, 0)
+        candy1.update(candy1Col, candy1Col + cellHeight, true)
+        candy2.update(candy2Col, candy2Col - cellHeight, true)
     } else if (candy1Col > candy2Col) {
-        candy1.update(- cellHeight, 0)
-        candy2.update(cellHeight, 0)
+        candy1.update(candy1Col, candy1Col - cellHeight, true)
+        candy2.update(candy2Col, candy2Col + cellHeight, true)
     }
 
     // change y or row values
     if (candy1Row < candy2Row) {
         // candy1 is less so move up
         // candy2 is more so move up
-        candy1.update(0, cellWidth)
-        candy2.update(0, - cellWidth)
+        candy1.update(candy1Row, candy1Row + cellWidth, false)
+        candy2.update(candy2Row, candy2Row - cellWidth, false)
     } else if (candy1Row > candy2Row) {
         // candy1 is more so move down
-        candy1.update(0, - cellWidth)
-        candy2.update(0, cellWidth)
+        candy1.update(candy1Row, candy1Row - cellWidth, false)
+        candy2.update(candy2Row, candy2Row + cellWidth, false)
     }
+}
+
+function swap(r1, c1, r2, c2) {
+    let candy1 = array[r1][c1]
+    let candy2 = array[r2][c2]
+
+    array[r1][c1] = array[r2][c2]
+    array[r2][c2] = candy1
 
 }
 
@@ -234,10 +254,9 @@ function mouseSwap(r1, c1, r2, c2) {
     // console.log("swap")
     currentmove = {column1: c1, row1: r1, column2: c2, row2: r2};
     selectedCandy.selected = false;
-    swap(r1, c1, r2, c2)
 
     // // Start animation
-    // animationstate = 2;
+    animationstate = 2;
     // animationtime = 0;
-    // gamestate = false;
+    gamestate = false;
 }
