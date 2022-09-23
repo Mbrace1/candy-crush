@@ -34,24 +34,27 @@ candyGrid.on("mouseout", onMouseOut);
 let array = []
 class Cell {
     constructor(x, y, type, candyGrid) {
+        this.x = x;
+        this.y = y
         this.candyGrid = candyGrid
         this.type = type
         this.texture = PIXI.Texture.from(`./img/${type}.png`)
         this.body = new PIXI.Sprite(this.texture)
-        this.body.position.x = x
-        this.body.position.y = y
+        this.candyGrid.addChild(this.body)
         this.body.anchor.x = 0.5
         this.body.anchor.y = 0.5
 
     }
 
     update(newX, newY) {
-        this.body.position.x = this.body.position.x + newX
-        this.body.position.y = this.body.position.y + newY
+        this.x = this.x + newX
+        this.y = this.y + newY
     }
 
     render() {
-        this.candyGrid.addChild(this.body)
+        this.body.position.x = this.x
+        this.body.position.y = this.y
+        this.body.alpha = 1
     }
 }
 
@@ -74,7 +77,7 @@ createBoard()
 
 
 function gameLoop() {
-    candyGrid.removeChildren()
+    // candyGrid.removeChildren()
     // update()
     render()
     requestAnimationFrame(gameLoop);
@@ -90,6 +93,9 @@ function render() {
             array[r][c].render()
         }
     }
+    if (selectedCandy.selected) {
+        array[selectedCandy.row][selectedCandy.col].body.alpha = 0.5
+    }
 }
 function update() {
     for (let r = 0; r < rows; r++) {
@@ -100,37 +106,45 @@ function update() {
 }
 
 function swap(r1, c1, r2, c2) {
-    let candy1 = array[r1-1][c1-1].body.texture
-    array[r1-1][c1-1].body.texture = array[r2-1][c2-1].body.texture
-    array[r2-1][c2-1].body.texture = candy1
-    // let candy1Col = candy1.body.position.x
-    // let candy1Row = candy1.body.position.y
+    // let candy1 = array[r1-1][c1-1].body.texture
+    // array[r1-1][c1-1].body.texture = array[r2-1][c2-1].body.texture
+    // array[r2-1][c2-1].body.texture = candy1
 
-    // let candy2Col = candy2.body.position.x
-    // let candy2Row = candy2.body.position.y
 
-    // // change x or col values
-    // if (candy1Col < candy2Col) {
-    //     // candy1 is less so move right
-    //     // candy2 is more so move left
-    //     candy1.update(cellHeight, 0)
-    //     candy2.update(- cellHeight, 0)
-    // } else if (candy1Col > candy2Col) {
-    //     candy1.update(- cellHeight, 0)
-    //     candy2.update(cellHeight, 0)
-    // }
+    let candy1 = array[r1][c1]
+    let candy2 = array[r2][c2]
 
-    // // change y or row values
-    // if (candy1Row < candy2Row) {
-    //     // candy1 is less so move up
-    //     // candy2 is more so move up
-    //     candy1.update(0, cellWidth)
-    //     candy2.update(0, - cellWidth)
-    // } else if (candy1Row > candy2Row) {
-    //     // candy1 is more so move down
-    //     candy1.update(0, - cellWidth)
-    //     candy2.update(0, cellWidth)
-    // }
+    array[r1][c1] = array[r2][c2]
+    array[r2][c2] = candy1
+
+    let candy1Col = candy1.body.position.x
+    let candy1Row = candy1.body.position.y
+
+    let candy2Col = candy2.body.position.x
+    let candy2Row = candy2.body.position.y
+
+    // change x or col values
+    if (candy1Col < candy2Col) {
+        // candy1 is less so move right
+        // candy2 is more so move left
+        candy1.update(cellHeight, 0)
+        candy2.update(- cellHeight, 0)
+    } else if (candy1Col > candy2Col) {
+        candy1.update(- cellHeight, 0)
+        candy2.update(cellHeight, 0)
+    }
+
+    // change y or row values
+    if (candy1Row < candy2Row) {
+        // candy1 is less so move up
+        // candy2 is more so move up
+        candy1.update(0, cellWidth)
+        candy2.update(0, - cellWidth)
+    } else if (candy1Row > candy2Row) {
+        // candy1 is more so move down
+        candy1.update(0, - cellWidth)
+        candy2.update(0, cellWidth)
+    }
 
 }
 
