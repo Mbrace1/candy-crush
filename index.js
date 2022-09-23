@@ -161,7 +161,7 @@ function animationSwap(r1, c1, r2, c2) {
 
 function swap(r1, c1, r2, c2) {
     let candy1 = array[r1][c1]
-    let candy2 = array[r2][c2]
+    // let candy2 = array[r2][c2]
 
     array[r1][c1] = array[r2][c2]
     array[r2][c2] = candy1
